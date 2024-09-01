@@ -1,2 +1,2 @@
-# PythonProjects
-This is a repo with different projects. This is just me randomly building stuffs
+# Python Project
+This is a repo with A WordSearch Django project. This is just me randomly building stuffs

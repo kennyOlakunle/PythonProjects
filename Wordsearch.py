@@ -67,3 +67,57 @@ directions = [
 
 
 # Function to Place Words on the Grid
+
+def place_word(grid, word):
+    word_length = len(word)
+    placed = False
+
+    while not placed:
+        # Randomly select a direction
+        direction = random.choice(directions)
+        row = random.randint(0, grid_size - 1)
+        col = random.randint(0, grid_size - 1)
+
+        # Check if word fits in the selected direction
+        end_row = row + direction[0] * (word_length - 1)
+        end_col = col + direction[1] * (word_length - 1)
+
+        if end_row < 0 or end_row >= grid_size or end_col < 0 or end_col >= grid_size:
+            continue
+
+        # Check if word overlaps with existing letters
+        overlap = False
+        for i in range(word_length):
+            cell = grid[row + i * direction[0]][col + i * direction[1]]
+            if cell != ' ' and cell != word[i]:
+                overlap = True
+                break
+
+        if not overlap:
+            # Place the word on the grid
+            for i in range(word_length):
+                grid[row + i * direction[0]][col + i * direction[1]] = word[i]
+            placed = True
+
+
+
+# Step 5: Place Words on the Grid
+for word in words:
+    place_word(grid, word)
+
+
+
+# Step 6: Fill Empty Spaces with Random Letters
+for row in range(grid_size):
+    for col in range(grid_size):
+        if grid[row][col] == ' ':
+            grid[row][col] = random.choice(string.ascii_uppercase)
+
+
+
+# Step 7: Display the Grid
+
+for row in grid:
+    print(' '.join(row))
+
+
