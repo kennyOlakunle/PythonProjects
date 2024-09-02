@@ -5,9 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Search Puzzle</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
         table {
             border-collapse: collapse;
             margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         td {
             border: 1px solid #ddd;
@@ -17,14 +23,38 @@
             width: 30px;
             height: 30px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         td.selected {
             background-color: yellow;
         }
+        td.found {
+            background-color: green;
+            color: white;
+        }
+        .word-list {
+            margin: 20px auto;
+            text-align: center;
+        }
+        .word-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .word-list li {
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .word-list li.found {
+            text-decoration: line-through;
+            color: gray;
+        }
     </style>
+    
 </head>
 <body>
-    <h1 style="text-align: center;">Word Search Puzzle</h1>
+    <h1>Word Search Puzzle</h1>
     <table id="wordSearchGrid">
         {% for row in grid %}
             <tr>
@@ -34,10 +64,62 @@
             </tr>
         {% endfor %}
     </table>
+    
+    <!-- Word List Display -->
+    <div class="word-list">
+        <h2>Find these words:</h2>
+        <ul id="wordList">
+            {% for word in words %}
+                <li id="word-{{ word }}">{{ word }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <script>
+        let selectedCells = [];
+    
         function selectCell(cell) {
             cell.classList.toggle('selected');
+            const cellIndex = selectedCells.indexOf(cell);
+    
+            if (cellIndex === -1) {
+                selectedCells.push(cell);
+            } else {
+                selectedCells.splice(cellIndex, 1);
+            }
+    
+            if (selectedCells.length > 0) {
+                const selectedWord = selectedCells.map(cell => cell.innerText).join('');
+                checkWord(selectedWord);
+            }
+        }
+    
+        function checkWord(word) {
+            fetch("{% url 'check_word' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ word: word })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'found') {
+                    // Mark word as found in the UI
+                    const wordElement = document.getElementById('word-' + data.word);
+                    if (wordElement) {
+                        wordElement.classList.add('found');
+                    }
+                    for (let cell of selectedCells) {
+                        cell.classList.add('found');
+                    }
+                }
+                selectedCells = []; // Clear selection after check
+            })
+            .catch(error => console.error('Error:', error));
         }
     </script>
+    
 </body>
 </html>

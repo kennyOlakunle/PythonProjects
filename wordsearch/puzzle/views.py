@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+
 
 # Create your views here.
 
@@ -68,6 +70,23 @@ for row in range(grid_size):
         if grid[row][col] == ' ':
             grid[row][col] = random.choice(string.ascii_uppercase)
 
+
+
+
 # Django View to Render the Grid
 def index(request):
-    return render(request, 'index.html', {'grid': grid})
+    return render(request, 'index.html', {'grid': grid, 'words': words})
+
+# New view to handle word checking
+def check_word(request):
+    if request.method == 'POST':
+        selected_word = request.POST.get('word').upper()
+        reverse_selected_word = selected_word[::-1]
+
+        # Check if the selected word or its reverse exists in the word list
+        if selected_word in words or reverse_selected_word in words:
+            return JsonResponse({'status': 'found', 'word': selected_word})
+        else:
+            return JsonResponse({'status': 'not_found', 'word': selected_word})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
